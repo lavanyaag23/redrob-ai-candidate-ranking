@@ -241,7 +241,7 @@ Explainable Recommendation Generation
 
 | Member | Role |
 |----------|------|
-| Lavanya | Project Architecture, Ranking Logic, Integration |
+| Lavanya Agrawal | Project Architecture, Ranking Logic, Integration |
 | Ahana Rathore| Feature Engineering |
 | Saumya Bhalothia | Job Description Analysis & Semantic Matching |
 | Aditi Kumari | Data Processing & Validation |
@@ -253,7 +253,7 @@ Explainable Recommendation Generation
 Clone the repository
 
 ```bash
-git clone https://github.com/<your-username>/redrob-ai-candidate-ranking.git
+git clone https://github.com/<your-username/redrob-ai-candidate-ranking.git
 ```
 
 Move into the project
