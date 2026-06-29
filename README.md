@@ -43,34 +43,43 @@ Build an intelligent ranking engine that:
 Job Description
         │
         ▼
-JD Feature Extraction
+JD Analysis & Requirement Extraction
         │
         ▼
-Candidate Dataset
+100K Candidate Profiles
         │
         ▼
-Feature Engineering
+Candidate Parsing & Feature Extraction
         │
         ▼
+Stage A
 Hard Filters & Honeypot Detection
         │
         ▼
-Rule-Based Matching
+Stage B
+Rule-Based Candidate Matching
         │
         ▼
-Semantic AI Matching
+Stage C
+Semantic Candidate Understanding
         │
         ▼
-Behavioral Signal Scoring
+Stage D
+Behavioral Signal Analysis
         │
         ▼
-Hybrid Score Fusion
+Stage E
+Hybrid Ranking Score
         │
         ▼
-Candidate Ranking
+Stage F
+Explainable Recommendation Generation
         │
         ▼
-Explainable AI
+Top 100 Candidate Ranking
+        │
+        ▼
+Submission Validation
         │
         ▼
 submission.csv
@@ -242,7 +251,7 @@ Explainable Recommendation Generation
 | Member | Role |
 |----------|------|
 | Lavanya Agrawal | Project Architecture, Ranking Logic, Integration |
-| Ahana Rathore| Feature Engineering |
+| Aahna Rathore| Feature Engineering |
 | Saumya Bhalothia | Job Description Analysis & Semantic Matching |
 | Aditi Kumari | Data Processing & Validation |
 
