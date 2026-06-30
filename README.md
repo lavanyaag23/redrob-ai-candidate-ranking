@@ -1,348 +1,119 @@
-# 🚀 Redrob AI Candidate Ranking System
+# Redrob AI Candidate Ranking System
 
-> AI-powered Intelligent Candidate Discovery & Ranking System built for the **Redrob Data & AI Challenge**.
+AI-powered candidate ranking system built for the Redrob Data & AI Challenge.
 
----
+## Why this approach
 
-## 📌 Project Overview
+Recruiters go through hundreds of profiles and still miss good candidates — not because the talent isn't there, but because keyword filters can't see what actually matters. A candidate who built a recommendation system at a product company might never use the word "RAG" or "Pinecone" on their profile. A candidate who lists every AI buzzword as a skill but has a Marketing Manager title probably isn't a fit. Plain keyword matching can't tell these two apart; this system tries to.
 
-Hiring the right candidate is more than matching keywords.
+Given a job description and 100,000 candidate profiles, the goal is to produce a ranked top-100 shortlist that a recruiter could actually trust — not just filtered, but ranked, with reasoning a human can check against the candidate's real history.
 
-This project builds an **AI-powered Candidate Discovery & Ranking System** that intelligently ranks candidates by combining:
+## How it works
 
-- Rule-based filtering
-- Semantic AI matching
-- Behavioral signal analysis
-- Explainable AI recommendations
+The pipeline runs in six stages:
 
-Instead of relying only on keyword matching, our system understands the **meaning** of the Job Description and Candidate Profiles to recommend the most suitable candidates.
+**Stage A — Hard filters.** Flags honeypot/fabricated profiles (e.g. "expert" proficiency claimed with zero months of duration, career timelines that don't add up) and the disqualifiers the JD calls out explicitly: pure-research-only backgrounds, pure-consulting-only career history, non-NLP domains with no retrieval/search exposure, frequent job-hopping, and senior titles with no evidence of recent hands-on coding.
 
----
+**Stage B — Rule-based skill and title matching.** Checks the JD's required and preferred skill terms against the candidate's skills list, career history text, and current title. Candidates whose title doesn't reflect technical work get a discount here (not a hard cutoff) — this is the direct defense against the keyword-stuffer trap the JD describes.
 
-## 🎯 Problem Statement
+**Stage C — Semantic matching.** Compares the JD text against each candidate's summary and career history using sentence embeddings (or TF-IDF as an offline-safe fallback). This is what catches the "plain-language" candidates — the ones who did the right work without using the JD's exact vocabulary.
 
-Given:
+**Stage D — Behavioral signal scoring.** Pulls in last-active recency, recruiter response rate and response speed, interview completion rate, GitHub activity score, and platform skill-assessment scores from `redrob_signals`.
 
-- 📄 Job Description (JD)
-- 👨‍💻 100K Candidate Profiles
-
-Build an intelligent ranking engine that:
-
-- Identifies the best candidates
-- Avoids keyword-only matching
-- Detects honeypot/fake profiles
-- Considers recruiter behavior signals
-- Generates explainable recommendations
-- Produces the Top 100 ranked candidates
-
----
-
-# 🏗️ System Architecture
+**Stage E — Score fusion.**
 
 ```
-Job Description
-        │
-        ▼
-JD Analysis & Requirement Extraction
-        │
-        ▼
-100K Candidate Profiles
-        │
-        ▼
-Candidate Parsing & Feature Extraction
-        │
-        ▼
-Stage A
-Hard Filters & Honeypot Detection
-        │
-        ▼
-Stage B
-Rule-Based Candidate Matching
-        │
-        ▼
-Stage C
-Semantic Candidate Understanding
-        │
-        ▼
-Stage D
-Behavioral Signal Analysis
-        │
-        ▼
-Stage E
-Hybrid Ranking Score
-        │
-        ▼
-Stage F
-Explainable Recommendation Generation
-        │
-        ▼
-Top 100 Candidate Ranking
-        │
-        ▼
-Submission Validation
-        │
-        ▼
-submission.csv
+final_score = (skill_score × semantic_score) × behavioral_modifier
 ```
 
----
+This is multiplicative, not additive, and that was a deliberate choice. The JD says directly that a perfect-on-paper candidate who hasn't logged in for months "is, for hiring purposes, not actually available" and should be down-weighted accordingly. An additive formula only lets a weak behavioral score subtract a small, fixed slice off the total — a candidate with great skills but zero engagement could still rank near the top. Making the behavioral signal a multiplier (scaling the rest of the score by roughly 0.4x to 1.0x) means low availability actually suppresses the score proportionally, which is what the JD is asking for.
 
-# ✨ Key Features
+**Stage F — Reasoning generation.** Every ranked candidate gets a short, grounded explanation built from their real profile fields — years of experience, title, which specific JD requirements matched, and any behavioral concerns. Nothing here is templated boilerplate; it's assembled per-candidate from what's actually in their data.
 
-✅ Intelligent Candidate Ranking
-
-✅ Semantic Matching using Sentence Transformers
-
-✅ Rule-Based Skill Matching
-
-✅ Candidate Experience Analysis
-
-✅ Behavioral Signal Analysis
-
-✅ Explainable AI Recommendations
-
-✅ Honeypot Candidate Detection
-
-✅ Hybrid Scoring Pipeline
-
----
-
-# 📂 Project Structure
+## Project structure
 
 ```
 redrob-ai-candidate-ranking/
-│
 ├── data/
-│   ├── candidates.jsonl
-│   ├── sample_candidates.json
-│   ├── sample_candidates.jsonl
-│   └── candidate_schema.json
-│
-├── docs/
-│   ├── architecture.md
-│   ├── candidate_schema_analysis.md
-│   ├── jd_analysis.md
-│   ├── ranking_logic.md
-│   ├── feature_engineering.md
-│   └── meeting_notes.md
-│
-├── models/
-│   └── README.md
-│
-├── notebooks/
-│   ├── exploratory_data_analysis.ipynb
-│   └── experiments.ipynb
-│
-├── outputs/
-│   └── submission.csv
-│
+│   └── sample_candidates.jsonl    # small sample for local testing (full candidates.jsonl
+│                                    # is not committed — see Getting Started)
 ├── src/
-│   │
-│   ├── preprocessing/
-│   │   ├── __init__.py
-│   │   └── load_candidates.py
-│   │
-│   ├── feature_engineering/
-│   │   ├── __init__.py
-│   │   └── feature_extractor.py
-│   │
-│   ├── matching/
-│   │   ├── __init__.py
-│   │   ├── hard_filters.py
-│   │   ├── skill_match.py
-│   │   └── semantic_match.py
-│   │
-│   ├── ranking/
-│   │   ├── __init__.py
-│   │   ├── behavioral.py
-│   │   ├── score_fusion.py
-│   │   ├── reasoning.py
-│   │   ├── scorer.py
-│   │   └── ranker.py
-│   │
-│   ├── evaluation/
-│   │   ├── __init__.py
-│   │   └── validate.py
-│   │
-│   ├── utils/
-│   │   ├── __init__.py
-│   │   ├── jd_config.py
-│   │   └── helpers.py
-│   │
-│   └── __init__.py
-│
-├── tests/
-│   ├── test_matching.py
-│   ├── test_ranking.py
-│   └── test_validation.py
-│
-├── .gitignore
-├── LICENSE
-├── main.py
-├── README.md
+│   ├── preprocessing/              # candidate loading
+│   ├── feature_engineering/        # candidate text construction for embeddings
+│   ├── matching/                   # Stages A-C
+│   ├── ranking/                    # Stages D-F
+│   ├── evaluation/                 # wraps the organizer's validator
+│   └── utils/                      # JD text, skill term lists, shared constants
+├── outputs/                        # submission.csv lands here when generated
+├── main.py                         # CLI entrypoint
+├── validate_submission.py          # organizer-provided format validator
+├── submission_metadata.yaml
 ├── requirements.txt
-└── validate_submission.py
+└── README.md
 ```
 
----
+## Tech stack
 
-# ⚙️ Tech Stack
+Python, pandas, NumPy, scikit-learn. Semantic matching uses sentence-transformers (`all-MiniLM-L6-v2`) by default, with a TF-IDF + cosine similarity fallback that needs no model download and runs fully offline — useful if you want to avoid the one-time model download or are testing in a no-network environment.
 
-### Programming Language
-
-- Python
-
-### Data Processing
-
-- Pandas
-- NumPy
-
-### Machine Learning
-
-- Scikit-learn
-
-### NLP & Semantic Search
-
-- Sentence Transformers
-- all-MiniLM-L6-v2
-
-### Similarity
-
-- Cosine Similarity
-
-### Version Control
-
-- Git
-- GitHub
-
----
-
-# 🧠 Ranking Pipeline
-
-### Stage 1
-
-Candidate Parsing & Feature Extraction
-
-### Stage 2
-
-Hard Filters
-
-- Invalid Profiles
-- Honeypot Detection
-- JD Disqualifiers
-
-### Stage 3
-
-Rule-Based Matching
-
-- Skills
-- Titles
-- Experience
-- Education
-
-### Stage 4
-
-Semantic AI Matching
-
-- Candidate Summary
-- Career History
-- Job Description
-
-### Stage 5
-
-Behavioral Scoring
-
-- Open to Work
-- Last Active
-- Recruiter Response Rate
-- GitHub Activity
-- Interview Completion
-
-### Stage 6
-
-Hybrid Score Fusion
-
-```
-Final Score =
-Rule Score
-+ Semantic Score
-+ Behavioral Score
-```
-
-### Stage 7
-
-Top 100 Candidate Selection
-
-### Stage 8
-
-Explainable Recommendation Generation
-
----
-
-# 📊 Evaluation Metrics
-
-- Precision@100
-- Honeypot Detection Rate
-- Semantic Match Quality
-- Behavioral Ranking Quality
-- Score Distribution Analysis
-
----
-
-# 👥 Team
-
-| Member | Role |
-|----------|------|
-| Lavanya Agrawal | Project Architecture, Ranking Logic, Integration |
-| Aahna Rathore| Feature Engineering |
-| Saumya Bhalothia | Job Description Analysis & Semantic Matching |
-| Aditi Kumari | Data Processing & Validation |
-
----
-
-# 🚀 Getting Started
-
-Clone the repository
+## Getting started
 
 ```bash
-git clone https://github.com/<your-username/redrob-ai-candidate-ranking.git
-```
-
-Move into the project
-
-```bash
+git clone https://github.com/lavanyaag23/redrob-ai-candidate-ranking.git
 cd redrob-ai-candidate-ranking
-```
-
-Install dependencies
-
-```bash
 pip install -r requirements.txt
 ```
 
-Run the project
+Quick test on the bundled sample (50 candidates, runs in well under a second):
 
 ```bash
-python main.py
+python main.py --candidates data/sample_candidates.jsonl --out outputs/submission.csv --backend tfidf
 ```
 
----
+Full run on the actual 100K dataset — place `candidates.jsonl` in `data/` first (it's not committed here, ~490MB):
 
-# 📌 Future Improvements
+```bash
+python main.py --candidates data/candidates.jsonl --out outputs/submission.csv --backend tfidf
+```
 
-- Learning-to-Rank Models
-- XGBoost Ranker
-- Fine-tuned Embedding Models
-- LLM-based Candidate Reasoning
-- Interactive Recruiter Dashboard
-- Real-time Candidate Search API
+This produces the top-100 ranked `submission.csv`. On a single CPU core this takes roughly 70-85 seconds, comfortably inside the 5-minute compute budget. Swap `--backend tfidf` for `--backend embeddings` if you want the sentence-transformers backend instead — it needs an internet connection the first time to download the model, but ranking itself still runs offline after that.
 
----
+Check the output against the official spec:
 
-# 📄 License
+```bash
+python validate_submission.py outputs/submission.csv
+```
 
-This project is developed for the **Redrob Data & AI Challenge** for educational and hackathon purposes.
+## Sandbox / demo
 
----
+A small-sample version of this pipeline (accepts up to 100 candidates, runs end-to-end) is hosted here for quick verification:
 
-## ⭐ If you found this project interesting, don't forget to star the repository!
+https://huggingface.co/spaces/aditii14/redrob-candidate-ranker
+
+## Honeypot handling
+
+The dataset includes a small number of honeypot candidates with profiles that look fine on the surface but don't hold up — impossible tenure, skill claims with no supporting history, assessment scores with nothing behind them. Stage A flags these and Stage E pushes their score close to zero rather than dropping them silently, so the scoring stays traceable end to end.
+
+## Evaluation we ran locally
+
+- Honeypot rate in the top 100 (target: under the 10% disqualification threshold)
+- Format and tie-break validation via `validate_submission.py`
+- Runtime/memory on the full 100K set: ~70-85 seconds, single core, under 4GB RAM
+- Manual spot-checks of reasoning text against the actual candidate profiles, to catch anything that looked templated or hallucinated
+
+## Team
+
+| Member | Role |
+|---|---|
+| Lavanya Agrawal | Architecture, ranking logic, integration |
+| Aahna Rathore | Candidate schema and feature analysis |
+| Saumya Bhalothia | Job description analysis, semantic matching |
+| Aditi Kumari | Pipeline implementation, submission validation |
+
+## Possible next steps
+
+A learned ranking model (e.g. LightGBM/XGBoost) trained on labeled relevance judgments instead of hand-tuned weights, a fine-tuned domain embedding model, and richer per-candidate reasoning would all be natural follow-ups given more time.
+
+## License
+
+Built for the Redrob Data & AI Challenge, for hackathon and educational purposes.
