@@ -1,0 +1,99 @@
+# Redrob Hackathon — Submission Metadata
+#
+# This file mirrors what was submitted via the portal at upload time.
+# Stage 3 review uses this file to verify portal metadata.
+
+# ============================================================================
+# Team identity
+# ============================================================================
+team_name: "Syntax Slayers"
+
+primary_contact:
+  name: "Lavanya Agrawal"
+  email: "lavanya.kanak.agrawal@gmail.com"
+  phone: "9461202850"
+
+team_members:
+  - name: "Lavanya Agrawal"
+    email: "lavanya.kanak.agrawal@gmail.com"
+    role: "Architecture, ranking logic, integration"
+  - name: "Aditi Kumari"
+    email: "kaditi876@gmail.com"
+    role: "Submission validation, pipeline implementation"
+  - name: "Saumya Bhalothia"
+    email: "saumya.15181@stu.upes.ac.in"
+    role: "Job description analysis, semantic matching"
+  - name: "Aahna Rathore"
+    email: "aahnarathore2183@gmail.com"
+    role: "Candidate schema and feature analysis"
+
+# ============================================================================
+# Code and reproducibility
+# ============================================================================
+github_repo: "https://github.com/lavanyaag23/redrob-ai-candidate-ranking"
+
+sandbox_link: "https://huggingface.co/spaces/aditii14/redrob-candidate-ranker"
+
+reproduce_command: "python main.py --candidates data/candidates.jsonl --out outputs/submission.csv --backend tfidf"
+
+# ============================================================================
+# Compute environment
+# ============================================================================
+compute:
+  platform: " Lenovo LOQ, HP Pavilion"
+  cpu_cores: 1                                  
+  ram_gb: 16                                    
+  python_version: "3.13"
+  os: "Windows 11"                              
+  uses_gpu_for_inference: false
+  has_network_during_ranking: false
+  pre_computation_required: false
+  pre_computation_time_minutes: 0
+
+# ============================================================================
+# AI tools declaration
+# ============================================================================
+ai_tools_used:
+  - "Claude"
+
+ai_usage_summary: |
+  Used Claude for architecture design discussion, code generation, debugging,
+  and iteration on the ranking pipeline (Stages A-F: hard filters, skill/title
+  matching, semantic similarity, behavioral signal scoring, multiplicative
+  score fusion, and reasoning generation). All design decisions — including
+  the choice of multiplicative over additive score fusion, and the specific
+  honeypot/disqualifier rules — were made and validated by the team based on
+  the job description and dataset, then implemented and iterated on with
+  Claude's assistance. No candidate data was sent to any external LLM API
+  during the ranking step itself; ranking runs fully offline using local
+  TF-IDF or sentence-transformers embeddings.
+
+# ============================================================================
+# Approach summary (optional but recommended)
+# ============================================================================
+methodology_summary: |
+  Six-stage pipeline: (A) hard filters flag honeypot/fabricated profiles and
+  JD-stated disqualifiers (pure-research-only, pure-consulting-only,
+  non-NLP-only, title-chasers, senior-but-not-coding); (B) rule-based skill
+  and title matching, with a discount (not a hard cutoff) for non-technical
+  titles to catch keyword-stuffer traps; (C) semantic similarity between the
+  JD and each candidate's career history (TF-IDF or sentence-transformers);
+  (D) behavioral signal scoring using last-active recency, recruiter response
+  rate/speed, interview completion, GitHub activity score, and platform skill
+  assessments; (E) multiplicative score fusion — behavioral signals scale
+  (not add to) the skill+semantic score, since the JD explicitly states
+  unavailable-but-qualified candidates should be "down-weighted
+  appropriately," which an additive formula does not achieve; (F) grounded,
+  per-candidate reasoning generation referencing real profile fields. Runtime
+  is approximately 70-85 seconds for the full 100,000-candidate dataset on a
+  single CPU core, well within the 5-minute budget.
+
+# ============================================================================
+# Declarations
+# ============================================================================
+declarations:
+  read_submission_spec: true
+  code_is_original_work: true
+  no_collusion: true
+  honeypot_check_done: true
+  reproduction_tested: true
