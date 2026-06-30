@@ -149,3 +149,5 @@ runs/
 # ===========================
 secrets.json
 credentials.json
+# Large dataset file - not committed
+candidates.jsonl
