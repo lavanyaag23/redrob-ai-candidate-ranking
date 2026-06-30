@@ -113,32 +113,75 @@ submission.csv
 redrob-ai-candidate-ranking/
 │
 ├── data/
-│   ├── raw/
-│   └── processed/
+│   ├── candidates.jsonl
+│   ├── sample_candidates.json
+│   ├── sample_candidates.jsonl
+│   └── candidate_schema.json
 │
 ├── docs/
 │   ├── architecture.md
 │   ├── candidate_schema_analysis.md
 │   ├── jd_analysis.md
-│   └── ranking_logic.md
-│
-├── notebooks/
-│
-├── src/
-│   ├── preprocessing/
-│   ├── feature_engineering/
-│   ├── matching/
-│   ├── ranking/
-│   ├── evaluation/
-│   └── utils/
-│
-├── outputs/
+│   ├── ranking_logic.md
+│   ├── feature_engineering.md
+│   └── meeting_notes.md
 │
 ├── models/
+│   └── README.md
 │
-├── requirements.txt
+├── notebooks/
+│   ├── exploratory_data_analysis.ipynb
+│   └── experiments.ipynb
+│
+├── outputs/
+│   └── submission.csv
+│
+├── src/
+│   │
+│   ├── preprocessing/
+│   │   ├── __init__.py
+│   │   └── load_candidates.py
+│   │
+│   ├── feature_engineering/
+│   │   ├── __init__.py
+│   │   └── feature_extractor.py
+│   │
+│   ├── matching/
+│   │   ├── __init__.py
+│   │   ├── hard_filters.py
+│   │   ├── skill_match.py
+│   │   └── semantic_match.py
+│   │
+│   ├── ranking/
+│   │   ├── __init__.py
+│   │   ├── behavioral.py
+│   │   ├── score_fusion.py
+│   │   ├── reasoning.py
+│   │   ├── scorer.py
+│   │   └── ranker.py
+│   │
+│   ├── evaluation/
+│   │   ├── __init__.py
+│   │   └── validate.py
+│   │
+│   ├── utils/
+│   │   ├── __init__.py
+│   │   ├── jd_config.py
+│   │   └── helpers.py
+│   │
+│   └── __init__.py
+│
+├── tests/
+│   ├── test_matching.py
+│   ├── test_ranking.py
+│   └── test_validation.py
+│
+├── .gitignore
+├── LICENSE
+├── main.py
 ├── README.md
-└── .gitignore
+├── requirements.txt
+└── validate_submission.py
 ```
 
 ---
