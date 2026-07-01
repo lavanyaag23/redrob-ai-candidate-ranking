@@ -1,119 +1,314 @@
 # Redrob AI Candidate Ranking System
 
-AI-powered candidate ranking system built for the Redrob Data & AI Challenge.
+AI-powered candidate ranking system developed for the **Redrob Data & AI Challenge**.
 
-## Why this approach
+The system ranks candidates based on their relevance to a job description by combining rule-based matching, semantic similarity, behavioral signals, and explainable reasoning. It is designed to process **100,000 candidate profiles** efficiently while generating a transparent **Top-100 shortlist**.
 
-Recruiters go through hundreds of profiles and still miss good candidates — not because the talent isn't there, but because keyword filters can't see what actually matters. A candidate who built a recommendation system at a product company might never use the word "RAG" or "Pinecone" on their profile. A candidate who lists every AI buzzword as a skill but has a Marketing Manager title probably isn't a fit. Plain keyword matching can't tell these two apart; this system tries to.
+---
 
-Given a job description and 100,000 candidate profiles, the goal is to produce a ranked top-100 shortlist that a recruiter could actually trust — not just filtered, but ranked, with reasoning a human can check against the candidate's real history.
+## Motivation
 
-## How it works
+Traditional recruitment systems rely heavily on keyword matching, which often overlooks qualified candidates or promotes irrelevant ones.
 
-The pipeline runs in six stages:
+For example:
 
-**Stage A — Hard filters.** Flags honeypot/fabricated profiles (e.g. "expert" proficiency claimed with zero months of duration, career timelines that don't add up) and the disqualifiers the JD calls out explicitly: pure-research-only backgrounds, pure-consulting-only career history, non-NLP domains with no retrieval/search exposure, frequent job-hopping, and senior titles with no evidence of recent hands-on coding.
+- A candidate who has built retrieval systems may never explicitly mention terms like **RAG** or **Pinecone**.
+- Another candidate may list every trending AI keyword without having meaningful hands-on experience.
 
-**Stage B — Rule-based skill and title matching.** Checks the JD's required and preferred skill terms against the candidate's skills list, career history text, and current title. Candidates whose title doesn't reflect technical work get a discount here (not a hard cutoff) — this is the direct defense against the keyword-stuffer trap the JD describes.
+This project addresses that gap by combining semantic understanding with profile validation and behavioral signals to produce rankings recruiters can trust.
 
-**Stage C — Semantic matching.** Compares the JD text against each candidate's summary and career history using sentence embeddings (or TF-IDF as an offline-safe fallback). This is what catches the "plain-language" candidates — the ones who did the right work without using the JD's exact vocabulary.
+---
 
-**Stage D — Behavioral signal scoring.** Pulls in last-active recency, recruiter response rate and response speed, interview completion rate, GitHub activity score, and platform skill-assessment scores from `redrob_signals`.
+# Features
 
-**Stage E — Score fusion.**
+- Rule-based candidate filtering
+- Semantic matching using Sentence Transformers
+- Offline TF-IDF fallback
+- Behavioral signal scoring
+- Honeypot candidate detection
+- Explainable candidate reasoning
+- Top-100 candidate ranking
+- Submission validator compatible with challenge requirements
 
+---
+
+# Ranking Pipeline
+
+## Stage A — Hard Filtering
+
+Filters or penalizes suspicious profiles based on:
+
+- Impossible career timelines
+- Unsupported skill claims
+- Honeypot candidates
+- Pure consulting backgrounds
+- Pure research backgrounds
+- Frequent job hopping
+- Senior titles without recent technical work
+- Non-NLP candidates lacking retrieval/search experience
+
+---
+
+## Stage B — Skill & Title Matching
+
+Matches the job description against:
+
+- Skills
+- Job titles
+- Career history
+
+Rather than removing candidates with non-technical titles, the system applies score penalties to reduce the impact of keyword stuffing.
+
+---
+
+## Stage C — Semantic Matching
+
+Calculates semantic similarity between:
+
+- Job description
+- Candidate summaries
+- Career history
+
+Supported backends:
+
+- Sentence Transformers (`all-MiniLM-L6-v2`)
+- TF-IDF + Cosine Similarity (offline mode)
+
+This enables matching based on meaning instead of exact keywords.
+
+---
+
+## Stage D — Behavioral Signal Scoring
+
+Candidate rankings are refined using platform engagement signals such as:
+
+- Last active date
+- Recruiter response rate
+- Response speed
+- Interview completion rate
+- GitHub activity
+- Skill assessment scores
+
+---
+
+## Stage E — Score Fusion
+
+Final score is computed as:
+
+```text
+Final Score =
+(Skill Score × Semantic Score) × Behavioral Modifier
 ```
-final_score = (skill_score × semantic_score) × behavioral_modifier
-```
 
-This is multiplicative, not additive, and that was a deliberate choice. The JD says directly that a perfect-on-paper candidate who hasn't logged in for months "is, for hiring purposes, not actually available" and should be down-weighted accordingly. An additive formula only lets a weak behavioral score subtract a small, fixed slice off the total — a candidate with great skills but zero engagement could still rank near the top. Making the behavioral signal a multiplier (scaling the rest of the score by roughly 0.4x to 1.0x) means low availability actually suppresses the score proportionally, which is what the JD is asking for.
+Using a multiplicative behavioral modifier ensures inactive candidates are appropriately down-ranked rather than receiving only a small penalty.
 
-**Stage F — Reasoning generation.** Every ranked candidate gets a short, grounded explanation built from their real profile fields — years of experience, title, which specific JD requirements matched, and any behavioral concerns. Nothing here is templated boilerplate; it's assembled per-candidate from what's actually in their data.
+---
 
-## Project structure
+## Stage F — Explainable Ranking
 
-```
+Every shortlisted candidate receives a concise explanation generated from profile data, including:
+
+- Years of experience
+- Current designation
+- Matching skills
+- Relevant work history
+- Behavioral observations
+
+This makes the ranking process transparent and recruiter-friendly.
+
+---
+
+# Project Structure
+
+```text
 redrob-ai-candidate-ranking/
+│
 ├── data/
-│   └── sample_candidates.jsonl    # small sample for local testing (full candidates.jsonl
-│                                    # is not committed — see Getting Started)
+│   └── sample_candidates.jsonl
+│
+├── demo/
+│   └── Syntax_Slayers_demo.mp4
+│
+├── docs/
+│   ├── project-report.pdf
+│   └── recruitment_pipeline_flowchart.png
+│
+├── outputs/
+│
 ├── src/
-│   ├── preprocessing/              # candidate loading
-│   ├── feature_engineering/        # candidate text construction for embeddings
-│   ├── matching/                   # Stages A-C
-│   ├── ranking/                    # Stages D-F
-│   ├── evaluation/                 # wraps the organizer's validator
-│   └── utils/                      # JD text, skill term lists, shared constants
-├── outputs/                        # submission.csv lands here when generated
-├── main.py                         # CLI entrypoint
-├── validate_submission.py          # organizer-provided format validator
+│   ├── preprocessing/
+│   ├── feature_engineering/
+│   ├── matching/
+│   ├── ranking/
+│   ├── evaluation/
+│   └── utils/
+│
+├── main.py
+├── validate_submission.py
 ├── submission_metadata.yaml
 ├── requirements.txt
 └── README.md
 ```
 
-## Tech stack
+---
 
-Python, pandas, NumPy, scikit-learn. Semantic matching uses sentence-transformers (`all-MiniLM-L6-v2`) by default, with a TF-IDF + cosine similarity fallback that needs no model download and runs fully offline — useful if you want to avoid the one-time model download or are testing in a no-network environment.
+# Tech Stack
 
-## Getting started
+- Python
+- Pandas
+- NumPy
+- scikit-learn
+- Sentence Transformers
+- TF-IDF
+- Cosine Similarity
+
+The project defaults to Sentence Transformers for semantic matching and automatically supports an offline TF-IDF backend.
+
+---
+
+# Getting Started
+
+## Clone the Repository
 
 ```bash
 git clone https://github.com/lavanyaag23/redrob-ai-candidate-ranking.git
 cd redrob-ai-candidate-ranking
+```
+
+## Install Dependencies
+
+```bash
 pip install -r requirements.txt
 ```
 
-Quick test on the bundled sample (50 candidates, runs in well under a second):
+---
+
+# Running the Project
+
+### Sample Dataset
 
 ```bash
-python main.py --candidates data/sample_candidates.jsonl --out outputs/submission.csv --backend tfidf
+python main.py \
+    --candidates data/sample_candidates.jsonl \
+    --out outputs/submission.csv \
+    --backend tfidf
 ```
 
-Full run on the actual 100K dataset — place `candidates.jsonl` in `data/` first (it's not committed here, ~490MB):
+---
+
+### Full Dataset
+
+Place `candidates.jsonl` inside the `data/` folder.
 
 ```bash
-python main.py --candidates data/candidates.jsonl --out outputs/submission.csv --backend tfidf
+python main.py \
+    --candidates data/candidates.jsonl \
+    --out outputs/submission.csv \
+    --backend tfidf
 ```
 
-This produces the top-100 ranked `submission.csv`. On a single CPU core this takes roughly 70-85 seconds, comfortably inside the 5-minute compute budget. Swap `--backend tfidf` for `--backend embeddings` if you want the sentence-transformers backend instead — it needs an internet connection the first time to download the model, but ranking itself still runs offline after that.
+Typical runtime:
 
-Check the output against the official spec:
+- 70–85 seconds
+- Single CPU core
+- Less than 4 GB RAM
+
+To enable sentence embeddings:
+
+```bash
+--backend embeddings
+```
+
+The model downloads only once and can then be used offline.
+
+---
+
+# Validate Submission
 
 ```bash
 python validate_submission.py outputs/submission.csv
 ```
 
-## Sandbox / demo
+---
 
-A small-sample version of this pipeline (accepts up to 100 candidates, runs end-to-end) is hosted here for quick verification:
+# Documentation
 
-https://huggingface.co/spaces/aditii14/redrob-candidate-ranker
+The `docs/` directory contains supporting project resources:
 
-## Honeypot handling
+- **project-report.pdf** – Detailed project report explaining the methodology, implementation, and evaluation.
+- **recruitment_pipeline_flowchart.png** – Architecture diagram illustrating the complete recruitment ranking pipeline.
 
-The dataset includes a small number of honeypot candidates with profiles that look fine on the surface but don't hold up — impossible tenure, skill claims with no supporting history, assessment scores with nothing behind them. Stage A flags these and Stage E pushes their score close to zero rather than dropping them silently, so the scoring stays traceable end to end.
+---
 
-## Evaluation we ran locally
+# Demo
 
-- Honeypot rate in the top 100 (target: under the 10% disqualification threshold)
-- Format and tie-break validation via `validate_submission.py`
-- Runtime/memory on the full 100K set: ~70-85 seconds, single core, under 4GB RAM
-- Manual spot-checks of reasoning text against the actual candidate profiles, to catch anything that looked templated or hallucinated
+A demonstration video showcasing the complete workflow is available in:
 
-## Team
+```text
+demo/
+└── Syntax_Slayers_demo.mp4
+```
 
-| Member | Role |
-|---|---|
-| Lavanya Agrawal | Architecture, ranking logic, integration |
-| Aahna Rathore | Candidate schema and feature analysis |
-| Saumya Bhalothia | Job description analysis, semantic matching |
-| Aditi Kumari | Pipeline implementation, submission validation |
+---
 
-## Possible next steps
+# Live Demo
 
-A learned ranking model (e.g. LightGBM/XGBoost) trained on labeled relevance judgments instead of hand-tuned weights, a fine-tuned domain embedding model, and richer per-candidate reasoning would all be natural follow-ups given more time.
+A lightweight version of the system (supports up to 100 candidates) is deployed on Hugging Face Spaces:
 
-## License
+**https://huggingface.co/spaces/aditii14/redrob-candidate-ranker**
 
-Built for the Redrob Data & AI Challenge, for hackathon and educational purposes.
+---
+
+# Honeypot Detection
+
+The dataset contains intentionally misleading candidate profiles.
+
+The system detects these by analyzing inconsistencies such as:
+
+- Impossible employment timelines
+- Unsupported skill claims
+- Unrealistic assessment records
+
+Instead of silently removing them, the ranking algorithm heavily penalizes these candidates while preserving explainability.
+
+---
+
+# Evaluation
+
+The solution was evaluated on:
+
+- Submission format validation
+- Honeypot rate within the Top-100
+- Runtime performance
+- Memory usage
+- Manual verification of generated explanations
+
+---
+
+# Team
+
+| Member | Contribution |
+|---------|--------------|
+| **Lavanya Agrawal** | System architecture, ranking logic, project integration |
+| **Aahna Rathore** | Candidate schema analysis and feature engineering |
+| **Saumya Bhalothia** | Job description analysis and semantic matching |
+| **Aditi Kumari** | Pipeline implementation, security checks, submission validation |
+
+---
+
+# Future Improvements
+
+Potential enhancements include:
+
+- Learning-to-Rank models (LightGBM/XGBoost)
+- Cross-Encoder reranking
+- Domain-specific embedding models
+- Improved behavioral calibration
+- Enhanced explanation generation
+- Interactive recruiter dashboard
+
+---
+
+# License
+
+This project was developed for the **Redrob Data & AI Challenge** and is intended for educational and hackathon purposes.
